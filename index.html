@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelo de Áreas - Factorización de Polinomios</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            
+            /* Colores de Fichas */
+            --tile-a2-bg: #dbeafe;
+            --tile-a2-border: #2563eb;
+            --tile-a2-text: #1e40af;
+            
+            --tile-a-bg: #d1fae5;
+            --tile-a-border: #059669;
+            --tile-a-text: #065f46;
+            
+            --tile-1-bg: #fef3c7;
+            --tile-1-border: #d97706;
+            --tile-1-text: #92400e;
+            
+            --danger-bg: #fef2f2;
+            --danger-border: #ef4444;
+            --danger-text: #991b1b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        /* Controles */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            align-items: end;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #334155;
+        }
+
+        .input-group input {
+            padding: 0.75rem;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1.1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .polynomial-display {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: #eff6ff;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #bfdbfe;
+        }
+
+        .presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            align-items: center;
+        }
+
+        .presets span {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .preset-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Inventario de Fichas */
+        .inventory-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #334155;
+        }
+
+        .tiles-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .tile-badge {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 2px solid transparent;
+        }
+
+        .tile-badge.a2 {
+            background: var(--tile-a2-bg);
+            border-color: var(--tile-a2-border);
+            color: var(--tile-a2-text);
+        }
+
+        .tile-badge.a {
+            background: var(--tile-a-bg);
+            border-color: var(--tile-a-border);
+            color: var(--tile-a-text);
+        }
+
+        .tile-badge.u1 {
+            background: var(--tile-1-bg);
+            border-color: var(--tile-1-border);
+            color: var(--tile-1-text);
+        }
+
+        .tile-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid currentColor;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .tile-icon.square-large {
+            width: 42px;
+            height: 42px;
+            font-size: 1.1rem;
+        }
+
+        .tile-icon.rect {
+            width: 42px;
+            height: 22px;
+            font-size: 0.9rem;
+        }
+
+        .tile-icon.square-small {
+            width: 24px;
+            height: 24px;
+            font-size: 0.8rem;
+        }
+
+        .tile-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tile-count {
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+
+        .tile-desc {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        /* Sección de Visualización */
+        .viz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .viz-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: #fafafa;
+            border-radius: 10px;
+            border: 1px dashed #cbd5e1;
+            overflow-x: auto;
+            min-height: 350px;
+        }
+
+        /* SVG */
+        svg {
+            max-width: 100%;
+            height: auto;
+            user-select: none;
+        }
+
+        .dim-label {
+            font-family: system-ui, sans-serif;
+            font-weight: 700;
+            fill: #1e293b;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        .dim-sublabel {
+            font-size: 12px;
+            fill: #64748b;
+        }
+
+        .dim-line {
+            stroke: #475569;
+            stroke-width: 2;
+            marker-start: url(#arrow);
+            marker-end: url(#arrow);
+        }
+
+        /* Tarjeta de Error */
+        .error-card {
+            background: var(--danger-bg);
+            border: 2px solid var(--danger-border);
+            color: var(--danger-text);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .error-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .error-details {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .error-details ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Tarjeta de Resultado */
+        .result-card {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+            color: #14532d;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .result-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #15803d;
+        }
+
+        .factorization-formula {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #166534;
+            letter-spacing: 0.5px;
+            margin: 0.5rem 0;
+        }
+
+        .verification {
+            font-size: 0.95rem;
+            color: #16803d;
+            background: rgba(255, 255, 255, 0.7);
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+            border: 1px solid #bbf7d0;
+        }
+
+        /* Leyenda */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+
+        footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Modelo de Áreas para Factorización</h1>
+        <p>Simulador interactivo con fichas algebraicas digitales para factorizar polinomios de la forma <strong>a² + pa + q</strong>.</p>
+    </header>
+
+    <!-- Panel de Controles -->
+    <div class="card">
+        <div class="controls-grid">
+            <div class="input-group">
+                <label for="inputP">Coeficiente p (término a):</label>
+                <input type="number" id="inputP" min="1" max="50" value="5">
+            </div>
+            <div class="input-group">
+                <label for="inputQ">Coeficiente q (término indep.):</label>
+                <input type="number" id="inputQ" min="1" max="100" value="6">
+            </div>
+            <div class="polynomial-display" id="polyDisplay">
+                a² + 5a + 6
+            </div>
+        </div>
+
+        <div class="presets">
+            <span>Ejemplos rápidos:</span>
+            <button class="preset-btn" onclick="setPreset(5, 6)">a² + 5a + 6</button>
+            <button class="preset-btn" onclick="setPreset(7, 12)">a² + 7a + 12</button>
+            <button class="preset-btn" onclick="setPreset(6, 9)">a² + 6a + 9</button>
+            <button class="preset-btn" onclick="setPreset(4, 5)">a² + 4a + 5 (Sin solución)</button>
+            <button class="preset-btn" onclick="setPreset(8, 15)">a² + 8a + 15</button>
+            <button class="preset-btn" onclick="setPreset(6, 7)">a² + 6a + 7 (Sin solución)</button>
+        </div>
+    </div>
+
+    <!-- Inventario -->
+    <div class="card">
+        <div class="inventory-title">📦 Inventario de Fichas Necesarias</div>
+        <div class="tiles-summary">
+            <div class="tile-badge a2">
+                <div class="tile-icon square-large">a²</div>
+                <div class="tile-info">
+                    <span class="tile-count" id="countA2">1</span>
+                    <span class="tile-desc">Cuadrado grande (a × a)</span>
+                </div>
+            </div>
+            <div class="tile-badge a">
+                <div class="tile-icon rect">a</div>
+                <div class="tile-info">
+                    <span class="tile-count" id="countA">5</span>
+                    <span class="tile-desc">Rectángulos (a × 1)</span>
+                </div>
+            </div>
+            <div class="tile-badge u1">
+                <div class="tile-icon square-small">1</div>
+                <div class="tile-info">
+                    <span class="tile-count" id="count1">6</span>
+                    <span class="tile-desc">Cuadrados pequeños (1 × 1)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Salida / Simulación -->
+    <div id="outputContainer"></div>
+
+    <footer>
+        Modelo de Áreas Algebraicas | Herramienta Didáctica de Factorización
+    </footer>
+</div>
+
+<script>
+    const inputP = document.getElementById('inputP');
+    const inputQ = document.getElementById('inputQ');
+    const polyDisplay = document.getElementById('polyDisplay');
+    const countA2 = document.getElementById('countA2');
+    const countA = document.getElementById('countA');
+    const count1 = document.getElementById('count1');
+    const outputContainer = document.getElementById('outputContainer');
+
+    function updateSimulation() {
+        let p = parseInt(inputP.value) || 0;
+        let q = parseInt(inputQ.value) || 0;
+
+        if (p < 1) p = 1;
+        if (q < 1) q = 1;
+
+        countA2.textContent = '1';
+        countA.textContent = p;
+        count1.textContent = q;
+
+        let pText = p === 1 ? 'a' : `${p}a`;
+        polyDisplay.innerHTML = `a² + ${pText} + ${q}`;
+
+        let factors = findFactorPair(p, q);
+
+        if (factors) {
+            renderSuccessRectangle(p, q, factors.m, factors.n);
+        } else {
+            renderFailureNotice(p, q);
+        }
+    }
+
+    function findFactorPair(p, q) {
+        for (let m = 1; m * m <= q; m++) {
+            if (q % m === 0) {
+                let n = q / m;
+                if (m + n === p) {
+                    return { m: Math.min(m, n), n: Math.max(m, n) };
+                }
+            }
+        }
+        return null;
+    }
+
+    function setPreset(p, q) {
+        inputP.value = p;
+        inputQ.value = q;
+        updateSimulation();
+    }
+
+    function renderSuccessRectangle(p, q, m, n) {
+        const unitSize = 32;
+        const aSize = 120;
+        const padding = 60;
+
+        const gridWidth = aSize + n * unitSize;
+        const gridHeight = aSize + m * unitSize;
+
+        const svgWidth = gridWidth + padding * 2;
+        const svgHeight = gridHeight + padding * 2;
+
+        const startX = padding;
+        const startY = padding;
+
+        let svgContent = `
+        <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}">
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+                </marker>
+            </defs>
+
+            <!-- Cotas de Dimensión Superior -->
+            <line x1="${startX}" y1="${startY - 20}" x2="${startX + aSize}" y2="${startY - 20}" stroke="#94a3b8" stroke-width="1.5" />
+            <text x="${startX + aSize / 2}" y="${startY - 30}" class="dim-label dim-sublabel">a</text>
+
+            ${n > 0 ? `
+            <line x1="${startX + aSize}" y1="${startY - 20}" x2="${startX + gridWidth}" y2="${startY - 20}" stroke="#94a3b8" stroke-width="1.5" />
+            <text x="${startX + aSize + (n * unitSize) / 2}" y="${startY - 30}" class="dim-label dim-sublabel">+ ${n}</text>
+            ` : ''}
+
+            <line x1="${startX}" y1="${startY - 45}" x2="${startX + gridWidth}" y2="${startY - 45}" class="dim-line" />
+            <text x="${startX + gridWidth / 2}" y="${startY - 55}" class="dim-label" font-size="18">Base = a + ${n}</text>
+
+            <!-- Cotas de Dimensión Izquierda -->
+            <line x1="${startX - 20}" y1="${startY}" x2="${startX - 20}" y2="${startY + aSize}" stroke="#94a3b8" stroke-width="1.5" />
+            <text x="${startX - 30}" y="${startY + aSize / 2}" class="dim-label dim-sublabel" transform="rotate(-90 ${startX - 30} ${startY + aSize / 2})">a</text>
+
+            ${m > 0 ? `
+            <line x1="${startX - 20}" y1="${startY + aSize}" x2="${startX - 20}" y2="${startY + gridHeight}" stroke="#94a3b8" stroke-width="1.5" />
+            <text x="${startX - 30}" y="${startY + aSize + (m * unitSize) / 2}" class="dim-label dim-sublabel" transform="rotate(-90 ${startX - 30} ${startY + aSize + (m * unitSize) / 2})">+ ${m}</text>
+            ` : ''}
+
+            <line x1="${startX - 45}" y1="${startY}" x2="${startX - 45}" y2="${startY + gridHeight}" class="dim-line" />
+            <text x="${startX - 55}" y="${startY + gridHeight / 2}" class="dim-label" font-size="18" transform="rotate(-90 ${startX - 55} ${startY + gridHeight / 2})">Altura = a + ${m}</text>
+
+            <!-- 1. Cuadrado a^2 -->
+            <rect x="${startX}" y="${startY}" width="${aSize}" height="${aSize}" 
+                  fill="var(--tile-a2-bg)" stroke="var(--tile-a2-border)" stroke-width="2.5" rx="4" />
+            <text x="${startX + aSize / 2}" y="${startY + aSize / 2}" 
+                  fill="var(--tile-a2-text)" font-size="22" font-weight="800" text-anchor="middle" dominant-baseline="middle">a²</text>
+        `;
+
+        // 2. Rectángulos 'a' Verticales
+        for (let col = 0; col < n; col++) {
+            let rx = startX + aSize + col * unitSize;
+            let ry = startY;
+            svgContent += `
+                <rect x="${rx}" y="${ry}" width="${unitSize}" height="${aSize}" 
+                      fill="var(--tile-a-bg)" stroke="var(--tile-a-border)" stroke-width="1.5" rx="2" />
+                <text x="${rx + unitSize / 2}" y="${ry + aSize / 2}" 
+                      fill="var(--tile-a-text)" font-size="14" font-weight="700" text-anchor="middle" dominant-baseline="middle">a</text>
+            `;
+        }
+
+        // 3. Rectángulos 'a' Horizontales
+        for (let row = 0; row < m; row++) {
+            let rx = startX;
+            let ry = startY + aSize + row * unitSize;
+            svgContent += `
+                <rect x="${rx}" y="${ry}" width="${aSize}" height="${unitSize}" 
+                      fill="var(--tile-a-bg)" stroke="var(--tile-a-border)" stroke-width="1.5" rx="2" />
+                <text x="${rx + aSize / 2}" y="${ry + unitSize / 2}" 
+                      fill="var(--tile-a-text)" font-size="14" font-weight="700" text-anchor="middle" dominant-baseline="middle">a</text>
+            `;
+        }
+
+        // 4. Cuadrados Unidad '1'
+        for (let row = 0; row < m; row++) {
+            for (let col = 0; col < n; col++) {
+                let rx = startX + aSize + col * unitSize;
+                let ry = startY + aSize + row * unitSize;
+                svgContent += `
+                    <rect x="${rx}" y="${ry}" width="${unitSize}" height="${unitSize}" 
+                          fill="var(--tile-1-bg)" stroke="var(--tile-1-border)" stroke-width="1.5" rx="2" />
+                    <text x="${rx + unitSize / 2}" y="${ry + unitSize / 2}" 
+                          fill="var(--tile-1-text)" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="middle">1</text>
+                `;
+            }
+        }
+
+        svgContent += `</svg>`;
+
+        outputContainer.innerHTML = `
+            <div class="result-card">
+                <h3>✅ ¡Rectángulo Completo Formado Exitosamente!</h3>
+                <div class="factorization-formula">
+                    a² + ${p === 1 ? '' : p}a + ${q} = (a + ${m})(a + ${n})
+                </div>
+                <div class="verification">
+                    Dimensiones del rectángulo: Base = <strong>(a + ${n})</strong>, Altura = <strong>(a + ${m})</strong> | Área = (a + ${m})(a + ${n})
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="viz-header">
+                    <span class="viz-title">📐 Representación Geométrica del Modelo de Áreas</span>
+                </div>
+                
+                <div class="canvas-container">
+                    ${svgContent}
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--tile-a2-bg); border: 1px solid var(--tile-a2-border);"></div>
+                        <span>1 × Cuadrado a²</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--tile-a-bg); border: 1px solid var(--tile-a-border);"></div>
+                        <span>${p} × Rectángulos a (${m} horiz. + ${n} vert.)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--tile-1-bg); border: 1px solid var(--tile-1-border);"></div>
+                        <span>${q} × Cuadrados unidad 1 (${m} × ${n})</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderFailureNotice(p, q) {
+        let factorPairs = [];
+        for (let d = 1; d * d <= q; d++) {
+            if (q % d === 0) {
+                factorPairs.push({ d1: d, d2: q / d, sum: d + (q / d) });
+            }
+        }
+
+        let pairsListHTML = factorPairs.map(pair => 
+            `<li>Factores de ${q}: <strong>${pair.d1} × ${pair.d2} = ${q}</strong> → Suma de lados: ${pair.d1} + ${pair.d2} = <strong>${pair.sum}</strong> (se querían ${p})</li>`
+        ).join('');
+
+        outputContainer.innerHTML = `
+            <div class="error-card">
+                <h3>⚠️ No se puede organizar en un rectángulo completo</h3>
+                <div class="error-details">
+                    El polinomio <strong>a² + ${p === 1 ? '' : p}a + ${q}</strong> no se puede factorizar en la forma <strong>(a + m)(a + n)</strong> con números enteros positivos.
+                    <br><br>
+                    <strong>Explicación Geométrica & Algebraica:</strong>
+                    <p style="margin-top:0.4rem;">Para formar un rectángulo con 1 ficha <i>a²</i>, ${p} fichas <i>a</i> y ${q} fichas <i>1</i>, se necesita dividir las ${p} fichas <i>a</i> en dos grupos <i>m</i> y <i>n</i> (tal que <i>m + n = ${p}</i>) de modo que el rectángulo resultante de fichas unidad se pueda completar exactamente con <i>m × n = ${q}</i> fichas pequeñas.</p>
+                    <ul>
+                        ${pairsListHTML}
+                    </ul>
+                    <p style="margin-top: 0.75rem;">Como ninguna pareja de factores de ${q} suma ${p}, las fichas no pueden acomodarse perfectamente en un rectángulo cerrado sin que sobren o falten espacios.</p>
+                </div>
+            </div>
+        `;
+    }
+
+    inputP.addEventListener('input', updateSimulation);
+    inputQ.addEventListener('input', updateSimulation);
+
+    updateSimulation();
+</script>
+
+</body>
+</html>
